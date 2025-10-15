@@ -1,11 +1,198 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Testamento Freitas</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        margin: 2rem;
+      }
+      .wrap {
+        max-width: 780px;
+        margin-inline: auto;
+      }
+      .row {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      #qrcode {
+        width: 220px;
+        height: 220px;
+      }
+      button {
+        padding: 0.8rem 1.1rem;
+        border: 0;
+        border-radius: 0.6rem;
+        cursor: pointer;
+      }
+      .primary {
+        background: #111827;
+        color: #fff;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+      pre {
+        white-space: pre-wrap;
+      }
+    </style>
+
+    <!-- 1) Librerías SIN integrity y con defer -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"
+      defer
+    ></script>
+    <!-- Usa la versión "qrcodejs" que expone la clase global `QRCode` -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+      defer
+    ></script>
   </head>
+
   <body>
-    <h1>Descarga tu testamento</h1>
+    <div class="wrap">
+      <h1>Descarga tu testamento</h1>
+      <p class="muted">
+        PDF generado al vuelo sobre Mateo Freitas, el nuevo salvador de la
+        tierra ✨
+      </p>
+
+      <div class="row">
+        <div>
+          <button class="primary" id="downloadBtn">
+            Generar y descargar PDF
+          </button>
+          <p class="muted" id="status"></p>
+        </div>
+
+        <div>
+          <div id="qrcode" title="Escaneá para descargar"></div>
+          <p class="muted">
+            Escaneá el QR: abre esta página con <code>?auto=1</code> y dispara
+            la descarga del PDF.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script defer>
+      // --- Contenido del PDF ---
+      const contenidoFalopa = `
+Testamento de Mateo Freitas — El Nuevo Salvador de la Tierra
+
+PRÓLOGO
+Mateo Freitas despertó un martes a las 7:07 y dijo: "Si el mate es redondo, la esperanza también".
+Desde entonces, cada sorbo es un commit al universo y cada bombilla, un pipeline de luz.
+
+ARTÍCULO I — La Yerba Trinitaria
+1. Toda mezcla perfecta contiene cuerpo, aroma y misterio.
+2. Agitar tres veces el paquete despliega los logs kármicos.
+
+ARTÍCULO II — La Doctrina del Agua Justa
+1. El agua nunca hierve: negocia.
+2. Si el vapor empaña los anteojos, estabas mirando muy de cerca tus propios bugs.
+
+ARTÍCULO III — La Bombilla Invertida
+1. Beber por la bombilla del vecino es pair programming espiritual.
+2. Si se tapa, no fuerces: "npm run desatar".
+
+ARTÍCULO IV — Ritos y Deploys
+1. Los domingos se ceban mates con debug activo y música de fondo en 432hz.
+2. Cada primer sorbo va dedicado al sprint de tus sueños.
+
+CREDO DE FREITAS
+- "No hay error, solo feature no documentada."
+- "Quien comparte su mate, comparte su roadmap."
+- "La fe se infunde caliente pero se sostiene tibia."
+
+ANEXO — Buenas prácticas
+- Documentá tus mates.
+- No mezcles azúcar con ansiedad.
+- Refactorizá tu día con siestas pequeñas y objetivos grandes.
+
+Sellado en la calabaza del tiempo.`.trim();
+
+      function buildAutoUrl() {
+        const url = new URL(window.location.href);
+        url.searchParams.set("auto", "1");
+        return url.toString();
+      }
+
+      function renderQR() {
+        if (!window.QRCode) {
+          console.error(
+            "QRCode no está disponible (¿falló la carga del script?)"
+          );
+          return;
+        }
+        const target = document.getElementById("qrcode");
+        target.innerHTML = "";
+        new QRCode(target, {
+          text: buildAutoUrl(),
+          width: 220,
+          height: 220,
+          correctLevel: QRCode.CorrectLevel.M,
+        });
+      }
+
+      async function generarPDF() {
+        const status = document.getElementById("status");
+        try {
+          if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error(
+              "jsPDF no está disponible (¿falló la carga del script?)"
+            );
+          }
+          status.textContent = "Generando PDF...";
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+          const margin = 56;
+          const maxWidth = 500;
+
+          doc.setFont("Times", "Normal");
+          doc.setFontSize(22);
+          doc.text("Testamento de Mateo Freitas", margin, 72);
+
+          doc.setFontSize(12);
+          const lines = doc.splitTextToSize(contenidoFalopa, maxWidth);
+          let y = 100;
+
+          for (const line of lines) {
+            if (y > 780) {
+              doc.addPage();
+              y = 72;
+            }
+            doc.text(line, margin, y);
+            y += 18;
+          }
+
+          doc.save("Testamento_Mateo_Freitas.pdf");
+          status.textContent = "¡Listo! PDF descargado.";
+        } catch (e) {
+          status.textContent = "Ups, no pude generar el PDF.";
+          console.error(e);
+        }
+      }
+
+      // Esperá a que el DOM y los <script defer> estén listos
+      window.addEventListener("DOMContentLoaded", () => {
+        renderQR();
+        document
+          .getElementById("downloadBtn")
+          .addEventListener("click", generarPDF);
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("auto") === "1") {
+          generarPDF();
+        }
+      });
+    </script>
   </body>
 </html>
