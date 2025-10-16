@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Testamento de Mateo Freitas</title>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+  </head>
+  <body>
+    <p style="font-family:sans-serif;">Generando el testamento...</p>
+
+    <script>
+      // --- Contenido separado ---
+      const testamento = `
+Testamento de Mateo Freitas — El Nuevo Salvador de la Tierra
+
+PRÓLOGO
+Mateo Freitas despertó un martes a las 7:07 y dijo: "Si el mate es redondo, la esperanza también".
+Desde entonces, cada sorbo es un commit al universo y cada bombilla, un pipeline de luz.
+
+ARTÍCULO I — La Yerba Trinitaria
+1. Toda mezcla perfecta contiene cuerpo, aroma y misterio.
+2. Agitar tres veces el paquete despliega los logs kármicos.
+
+ARTÍCULO II — La Doctrina al Estudiante
+1. Lo explica una vez y corta y chill.
+2. Si no prestan atención hay tabla.
+
+ARTÍCULO III — Las Pocas Ganas de Laburar
+1. Prohibido trabajar los días de semana.
+2. Ni con carga en el powerbank le hace reflotar las ganas del laburo.
+
+ARTÍCULO IV — Ritos
+1. Los domingos se levanta y acogota la gallina.
+2. Cada primer sorbo va dedicado al sprint de tus sueños.
+
+CREDO DE FREITAS
+- "No hay error, yo no compro."
+- "Quien comparte su mate, sabrá sus secretos."
+- "Las ganas de laburar las dejo en casa."
+
+ANEXO — Buenas prácticas
+- Documentá tus ganas de laburar.
+- No mezcles merluza con ansiedad.
+- Refactorizá tu día con horas laborales.
+
+Sellado en la calabaza del tiempo.`.trim();
+
+      // --- Generar PDF al cargar ---
+      window.addEventListener("DOMContentLoaded", async () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+        const margin = 56;
+        const maxWidth = 500;
+
+        doc.setFont("Times", "Normal");
+        doc.setFontSize(22);
+        doc.text("Testamento de Mateo Freitas", margin, 72);
+
+        doc.setFontSize(12);
+        const lines = doc.splitTextToSize(testamento, maxWidth);
+        let y = 100;
+
+        for (const line of lines) {
+          if (y > 780) {
+            doc.addPage();
+            y = 72;
+          }
+          doc.text(line, margin, y);
+          y += 18;
+        }
+
+        const blob = doc.output("blob");
+        const url = URL.createObjectURL(blob);
+        window.location.href = url;
+      });
+    </script>
+  </body>
+</html>
